@@ -12,15 +12,27 @@ def get_rank():
     pass
 
 
-def summoner_lookup():
+def get_summoner():
     pass
 
 
 @click.command()
 @click.argument('command')
 @click.option('--verbose', '-v', help='Enable Verbosity', is_flag=True)
-def main(command, verbose):
+@click.option('--api', '-a', help='Your Riot Games API Key')
+def main(command, api, verbose):
+
+    command_mapper = {
+        'challengers': get_challengers,
+        'rank': get_rank,
+        'summoner': get_summoner
+    }
+
     if verbose:
-        print(f'league {command}')
-    if command == 'rank':
-        click.echo('getting rank .. ')
+        click.echo(click.style(f'league {command}', fg='green'))
+        if api:
+            click.echo(click.style(f'using api key {api}', fg='green'))
+
+    if callable(command_mapper[command]):
+        r = command_mapper[command]
+        r()
