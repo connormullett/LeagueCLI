@@ -29,9 +29,9 @@ def main(command, api, verbose):
     }
 
     if verbose:
-        click.echo(click.style(f'league {command}', fg='green'))
+        click.echo(click.style(f'league {command}', fg='bright_blue'))
         if api:
-            click.echo(click.style(f'using api key {api}', fg='green'))
+            click.echo(click.style(f'using api key {api}', fg='bright_blue'))
 
     if callable(command_mapper[command]):
         r = command_mapper[command]
