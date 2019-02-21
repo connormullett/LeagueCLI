@@ -4,35 +4,29 @@ import click
 import requests
 
 
-def get_challengers():
+def get_dev_key():
+    with open('settings.txt', 'r') as f:
+        return f.read().rstrip()
+
+
+@click.group()
+@click.option('--api', '-a', help='your riot games api key')
+def main(api):
     pass
 
 
-def get_rank():
+@main.command()
+def challenger():
     pass
 
 
-def get_summoner():
+@main.command()
+def rank():
     pass
 
 
-@click.command()
-@click.argument('command')
-@click.option('--verbose', '-v', help='Enable Verbosity', is_flag=True)
-@click.option('--api', '-a', help='Your Riot Games API Key')
-def main(command, api, verbose):
+@main.command()
+def summoner():
+    pass
 
-    command_mapper = {
-        'challengers': get_challengers,
-        'rank': get_rank,
-        'summoner': get_summoner
-    }
 
-    if verbose:
-        click.echo(click.style(f'league {command}', fg='bright_blue'))
-        if api:
-            click.echo(click.style(f'using api key {api}', fg='bright_blue'))
-
-    if callable(command_mapper[command]):
-        r = command_mapper[command]
-        r()
