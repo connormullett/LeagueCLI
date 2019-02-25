@@ -62,13 +62,33 @@ def challenger(ctx, queue, limit):
                 break
 
 
-@main.command()
-def rank():
-    pass
+# import main? @main.command  for multifiles?
+@main.command(help='display ranked stats by summoner name and other useful information')
+@click.argument('name')
+@click.pass_context
+def rank(ctx, name):
+    api = ctx.obj['api']
+    verbose = ctx.obj['verbose']
+
+    name = name.replace(' ', '%20')
+    response = requests.get(f'{BASE_URL}summoner/v4/summoners/by-name/{name}?api_key={api}')
+
+    if verbose:
+        click.echo(f'Status: {response.status_code}')
+
+    try:
+        summ_id = response.json()['id']
+        player_data = requests.get(f'{BASE_URL}league/v4/positions/by-summoner/{summ_id}?api_key={api}')
+        player_data = player_data.json()[0]
+        click.echo(f"{player_data['tier']}  {player_data['rank']}")
+    except KeyError:
+        click.secho('No player data found', fg='red', bold=True)
 
 
-@main.command()
-@click.argument('name', nargs=1)
-def summoner(name):
+@main.command(help='search summoners, wrap multiword names in \'\'')
+@click.argument('name')
+@click.option('--games', '-g', help='how many games to displaye')
+def summoner(name, games):
+    # should display whatever is on profile page in client
     click.echo(name)
 
