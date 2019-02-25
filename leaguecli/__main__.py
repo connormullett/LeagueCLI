@@ -26,19 +26,22 @@ def main(ctx, api, verbose):
 
 
 @main.command()
-@click.option('--queue', '-q', help='queue type to search for', default='s')
+@click.option('--queue', '-q', help='queue type to search for. s = solo, f = flex, t = treeline', default='s')
 @click.option('--limit', '-l', help='limit returned results starting from rank 1 ' \
         'to limit')
 @click.pass_context
 def challenger(ctx, queue, limit):
-    click.echo('using api key %s' % (ctx.obj['api']))
-    click.echo('verbosity %s' % (ctx.obj['verbose'] and 'on' or 'off'))
-
     queue_mapper = {
-                's': 'RANKED_SOLO_5x5'
+                's': 'RANKED_SOLO_5x5',
+                'f': 'RANKED_FLEX_SR',
+                't': 'RANKED_FLEX_TT'
             }
 
     queue = queue_mapper[queue]
+
+    if ctx.obj['verbose']:
+        click.echo('using api key %s' % (ctx.obj['api']))
+        click.echo(f'Searching challenger queue {queue}')
 
     response = requests.get(f"{BASE_URL}league/v4/challengerleagues/by-queue/{queue}?api_key={ctx.obj['api']}")
 
