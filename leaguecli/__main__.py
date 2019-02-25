@@ -70,6 +70,10 @@ def rank(ctx, name):
     api = ctx.obj['api']
     verbose = ctx.obj['verbose']
 
+    if verbose:
+        click.echo(f'using api key {api}')
+        click.echo(f'grabbing summoner {name}')
+
     name = name.replace(' ', '%20')
     response = requests.get(f'{BASE_URL}summoner/v4/summoners/by-name/{name}?api_key={api}')
 
