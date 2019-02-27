@@ -103,7 +103,15 @@ def summoner(ctx, name, games):
 
 
     def get_rank(summ_id):
-        pass
+        response = requests.get(f'{BASE_URL}league/v4/positions/by-summoner/{summ_id}?api_key={api}')
+        try:
+            tier = response.json()[0]['tier']
+            rank = response.json()[0]['rank']
+        except KeyError:
+            return None, None
+        except IndexError:
+            return None, None
+        return tier, rank
 
 
     def get_champ_mastery(summ_id):
@@ -131,10 +139,16 @@ def summoner(ctx, name, games):
     summoner_name = response.json()['name']
 
     # get rank
-
+    tier, rank = get_rank(summ_id)
 
     # display name
     click.echo(summoner_name)
+
+    # display rank
+    if tier and rank:
+        click.echo(f'{tier} {rank}')
+    else:
+        click.secho(f'No ranked data found for {summoner_name}', fg='red', bold=True)
 
     # display highest mastery
     for champ in top_3_champs:
