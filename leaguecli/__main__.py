@@ -18,13 +18,12 @@ def get_dev_key():
 
 @click.group()
 @click.option('--api', '-a', help='your riot games api key')
-@click.option('--verbose', '-v', help='enable verbosity', is_flag=True)
+@click.option('--verbose', '-v', help='enable verbosity', default=False, is_flag=True)
 @click.pass_context
 def main(ctx, api, verbose):
     ctx.obj = {}
     if not api:
         api = get_dev_key()
-    ctx.obj['api'] = api
     ctx.obj['api'] = api
     ctx.obj['verbose'] = verbose
 
@@ -102,6 +101,11 @@ def summoner(ctx, name, games):
     rank, and top 3 champs with highest mastery
     '''
 
+
+    def get_rank(summ_id):
+        pass
+
+
     def get_champ_mastery(summ_id):
         '''
         returns json serializable string containing
@@ -113,17 +117,26 @@ def summoner(ctx, name, games):
     api = ctx.obj['api']
     verbose = ctx.obj['verbose']
 
-    if verbose:
-        pass
-
-    click.echo(name.capitalize())
     name = name.replace(' ', '%20')
 
     response = requests.get(f'{BASE_URL}summoner/v4/summoners/by-name/{name}?api_key={api}')
 
+    # get summoner id
     summ_id = response.json()['id']
+
+    # get mastery points for top 3 champs
     top_3_champs = get_champ_mastery(summ_id)
 
+    # get name
+    summoner_name = response.json()['name']
+
+    # get rank
+
+
+    # display name
+    click.echo(summoner_name)
+
+    # display highest mastery
     for champ in top_3_champs:
         click.echo(f"{champ['championId']}\t{champ['championLevel']}")
 
