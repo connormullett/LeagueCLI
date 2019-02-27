@@ -3,8 +3,12 @@
 import click
 import requests
 import operator
+import tzlocal
+
+from datetime import datetime
 
 
+TIMEZONE = tzlocal.get_localzone()
 BASE_URL = 'https://na1.api.riotgames.com/lol/'
 
 def get_dev_key():
@@ -62,7 +66,6 @@ def challenger(ctx, queue, limit):
                 break
 
 
-# import main? @main.command  for multifiles?
 @main.command(help='display ranked stats by summoner name and other useful information')
 @click.argument('name')
 @click.pass_context
@@ -91,8 +94,36 @@ def rank(ctx, name):
 
 @main.command(help='search summoners, wrap multiword names in \'\'')
 @click.argument('name')
-@click.option('--games', '-g', help='how many games to displaye')
-def summoner(name, games):
-    # should display whatever is on profile page in client
-    click.echo(name)
+@click.option('--games', '-g', help='how many games to display')
+@click.pass_context
+def summoner(ctx, name, games):
+    '''
+    looks up by summoner name and shows past 20 games,
+    rank, and top 3 champs with highest mastery
+    '''
+
+    def get_champ_mastery(summ_id):
+        '''
+        returns json serializable string containing
+        top 3 champs with highest mastery
+        '''
+        response = requests.get(f'{BASE_URL}champion-mastery/v4/champion-masteries/by-summoner/{summ_id}?api_key={api}')
+        return response.json()[:3]
+
+    api = ctx.obj['api']
+    verbose = ctx.obj['verbose']
+
+    if verbose:
+        pass
+
+    click.echo(name.capitalize())
+    name = name.replace(' ', '%20')
+
+    response = requests.get(f'{BASE_URL}summoner/v4/summoners/by-name/{name}?api_key={api}')
+
+    summ_id = response.json()['id']
+    top_3_champs = get_champ_mastery(summ_id)
+
+    for champ in top_3_champs:
+        click.echo(f"{champ['championId']}\t{champ['championLevel']}")
 
