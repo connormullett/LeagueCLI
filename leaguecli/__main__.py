@@ -103,10 +103,13 @@ def summoner(ctx, name, games):
     '''
 
 
-    def get_champ_name(champ_ids: list):
+    def get_champ_name(champ_id):
         with open('champion.json', 'r') as f:
             champions = json.loads(f.read())
 
+        for name, data in champions['data'].items():
+            if int(data['key']) == champ_id:
+                return name
 
 
     def get_rank(summ_id):
@@ -153,9 +156,10 @@ def summoner(ctx, name, games):
     else:
         click.secho(f'No ranked data found for {summoner_name}', fg='red', bold=True)
 
-    champ_names = get_champ_name(top_3_champs)
-    print(champ_names)
-
+    click.secho('%10s %16s' % ('NAME', 'LEVEL'), fg='blue', bold=True)
     for champ in top_3_champs:
-        click.echo(f"{champ['championId']}\t{champ['championLevel']}")
+        name = get_champ_name(champ['championId'])
+        level = champ['championLevel']
+
+        click.echo('%10s %16s' % (name, level))
 
