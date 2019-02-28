@@ -13,7 +13,7 @@ TIMEZONE = tzlocal.get_localzone()
 BASE_URL = 'https://na1.api.riotgames.com/lol/'
 
 def get_dev_key():
-    with open('../settings.txt', 'r') as f:
+    with open('settings.txt', 'r') as f:
         return f.read().rstrip()
 
 
