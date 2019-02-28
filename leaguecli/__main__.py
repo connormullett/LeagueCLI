@@ -4,6 +4,7 @@ import click
 import requests
 import operator
 import tzlocal
+import json
 
 from datetime import datetime
 
@@ -12,7 +13,7 @@ TIMEZONE = tzlocal.get_localzone()
 BASE_URL = 'https://na1.api.riotgames.com/lol/'
 
 def get_dev_key():
-    with open('settings.txt', 'r') as f:
+    with open('../settings.txt', 'r') as f:
         return f.read().rstrip()
 
 
@@ -102,6 +103,12 @@ def summoner(ctx, name, games):
     '''
 
 
+    def get_champ_name(champ_ids: list):
+        with open('champion.json', 'r') as f:
+            champions = json.loads(f.read())
+
+
+
     def get_rank(summ_id):
         response = requests.get(f'{BASE_URL}league/v4/positions/by-summoner/{summ_id}?api_key={api}')
         try:
@@ -129,28 +136,26 @@ def summoner(ctx, name, games):
 
     response = requests.get(f'{BASE_URL}summoner/v4/summoners/by-name/{name}?api_key={api}')
 
-    # get summoner id
+    # get elements to be displayed
     summ_id = response.json()['id']
 
-    # get mastery points for top 3 champs
     top_3_champs = get_champ_mastery(summ_id)
 
-    # get name
     summoner_name = response.json()['name']
 
-    # get rank
     tier, rank = get_rank(summ_id)
 
-    # display name
+    # display elements
     click.echo(summoner_name)
 
-    # display rank
     if tier and rank:
         click.echo(f'{tier} {rank}')
     else:
         click.secho(f'No ranked data found for {summoner_name}', fg='red', bold=True)
 
-    # display highest mastery
+    champ_names = get_champ_name(top_3_champs)
+    print(champ_names)
+
     for champ in top_3_champs:
         click.echo(f"{champ['championId']}\t{champ['championLevel']}")
 
