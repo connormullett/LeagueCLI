@@ -5,6 +5,7 @@ import requests
 import operator
 import tzlocal
 import json
+import os
 
 from datetime import datetime
 
@@ -12,8 +13,9 @@ from datetime import datetime
 TIMEZONE = tzlocal.get_localzone()
 BASE_URL = 'https://na1.api.riotgames.com/lol/'
 
+
 def get_dev_key():
-    with open('settings.txt', 'r') as f:
+    with open(r'settings.txt', 'r') as f:
         return f.read().rstrip()
 
 
