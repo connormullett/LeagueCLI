@@ -4,6 +4,8 @@ import click
 import requests
 import operator
 import tzlocal
+import json
+import os
 
 from datetime import datetime
 
@@ -13,19 +15,18 @@ BASE_URL = 'https://na1.api.riotgames.com/lol/'
 
 
 def get_dev_key():
-    with open('settings.txt', 'r') as f:
+    with open(r'settings.txt', 'r') as f:
         return f.read().rstrip()
 
 
 @click.group()
 @click.option('--api', '-a', help='your riot games api key')
-@click.option('--verbose', '-v', help='enable verbosity', is_flag=True)
+@click.option('--verbose', '-v', help='enable verbosity', default=False, is_flag=True)
 @click.pass_context
 def main(ctx, api, verbose):
     ctx.obj = {}
     if not api:
         api = get_dev_key()
-    ctx.obj['api'] = api
     ctx.obj['api'] = api
     ctx.obj['verbose'] = verbose
 
@@ -109,6 +110,28 @@ def summoner(ctx, name, games):
     rank, and top 3 champs with highest mastery
     '''
 
+
+    def get_champ_name(champ_id):
+        with open('champion.json', 'r') as f:
+            champions = json.loads(f.read())
+
+        for name, data in champions['data'].items():
+            if int(data['key']) == champ_id:
+                return name
+
+
+    def get_rank(summ_id):
+        response = requests.get(f'{BASE_URL}league/v4/positions/by-summoner/{summ_id}?api_key={api}')
+        try:
+            tier = response.json()[0]['tier']
+            rank = response.json()[0]['rank']
+        except KeyError:
+            return None, None
+        except IndexError:
+            return None, None
+        return tier, rank
+
+
     def get_champ_mastery(summ_id):
         '''
         local function
@@ -123,17 +146,32 @@ def summoner(ctx, name, games):
     api = ctx.obj['api']
     verbose = ctx.obj['verbose']
 
-    if verbose:
-        pass
-
-    click.echo(name.capitalize())
     name = name.replace(' ', '%20')
 
     response = requests.get(
         f'{BASE_URL}summoner/v4/summoners/by-name/{name}?api_key={api}')
 
+    # get elements to be displayed
     summ_id = response.json()['id']
+
     top_3_champs = get_champ_mastery(summ_id)
 
+    summoner_name = response.json()['name']
+
+    tier, rank = get_rank(summ_id)
+
+    # display elements
+    click.echo(summoner_name)
+
+    if tier and rank:
+        click.echo(f'{tier} {rank}')
+    else:
+        click.secho(f'No ranked data found for {summoner_name}', fg='red', bold=True)
+
+    click.secho('%10s %16s' % ('NAME', 'LEVEL'), fg='blue', bold=True)
     for champ in top_3_champs:
-        click.echo(f"{champ['championId']}\t{champ['championLevel']}")
+        name = get_champ_name(champ['championId'])
+        level = champ['championLevel']
+
+        click.echo('%10s %16s' % (name, level))
+
