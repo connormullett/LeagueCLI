@@ -9,7 +9,7 @@ setup(
     include_package_data=True,
     entry_points={
         'console_scripts': [
-            'league=leaguecli.__main__:main'
+            'league=leaguecli.main:main'
         ]
     }
 )
